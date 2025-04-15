@@ -47,7 +47,7 @@ public class Pojistenec {
 
     /**
      * Vrací ID pojištěnce
-     * @return idPojistence
+     * @return idPojistence Vrácené ID pojištěnce
      */
     public int getIdPojistence() {
         return idPojistence;
@@ -71,17 +71,17 @@ public class Pojistenec {
 
     /**
      * Vrací textovou reprezentaci pojištěnce
-     * @return Textová reprezentace pojištěnce
+     * @return text Textová reprezentace pojištěnce
      */
     @Override
     public String toString() {
         int delkaJmena = jmeno.length() + prijmeni.length() + 1;
         int delkaMezery = 20 - delkaJmena;
-        String text = "   ID: " + idPojistence + " - " + jmeno + " " + prijmeni + " ";
+        String textovaReprezentace = "   ID: " + idPojistence + " - " + jmeno + " " + prijmeni + " ";
         for (int i = 0; i < delkaMezery; i++) {
-            text += "-";
+            textovaReprezentace += "-";
         }
-        text += " věk: " + vek + " tel.č: " + telefonniCislo;
-        return text;
+        textovaReprezentace += " věk: " + vek + " tel.č: " + telefonniCislo;
+        return textovaReprezentace;
     }
 }

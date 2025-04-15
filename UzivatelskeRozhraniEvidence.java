@@ -11,21 +11,32 @@ public class UzivatelskeRozhraniEvidence {
     /**
      * Databáze pojištěnců
      */
-    private DatabazePojistencu databaze;
+    private DatabazePojistencu databazeVsechPojistencu;
 
     /**
      * Instance scanneru
      */
     private Scanner sc = new Scanner(System.in);
 
+    /**
+     * Vytvoří instanci uživatelského rozhranní evidence pojištěnců
+     */
     public UzivatelskeRozhraniEvidence() {
-        databaze = new DatabazePojistencu();
+        databazeVsechPojistencu = new DatabazePojistencu();
     }
 
     /**
-     * Sestaví celou výstražnou hlášku k neúspěšné validaci vstupní hodnoty
-     * @param hlaska konkrétní část výstražné hlášky vztahující se k validované proměnné
-     * @return
+     * Vrátí databázi pojištěnců
+     * @return Kompletní databáze všech pojištěnců
+     */
+    public DatabazePojistencu getDatabazePojistencu() {
+        return this.databazeVsechPojistencu;
+    }
+
+    /**
+     * Sestaví celou výstražnou hlášku k hodnotě zadané uživatelem, která neuspěla při validaci vstupu
+     * @param hlaska Část výstražné hlášky vztahující se ke konkrétnímu validovanému vstupu
+     * @return Celá sestavená vrácená výstražná hláška
      */
     public String sestavVystraznouHlasku(String hlaska) {
         return String.format("   Chybně zadáno - %s. Opakujte Znovu.", hlaska);
@@ -33,7 +44,7 @@ public class UzivatelskeRozhraniEvidence {
 
     /**
      * Obsahuje cyklus, který ošetřuje, aby byla vstupní hodnota typu int
-     * @return čiselný vstup
+     * @return Parsovaná vstupní hodnota typu int
      */
     public int parsujCislo() {
         while (true) {
@@ -48,7 +59,7 @@ public class UzivatelskeRozhraniEvidence {
     /**
      * Zvaliduje zadaný text
      * @param hlaska parametr, který bude doplněn do výstražné hlášky podle druhu validovaného textu
-     * @return
+     * @return Vstupní hodnota typu String, která byla úspěšně zvalidována
      */
     public String zvalidujZadanyText(String hlaska) {
         boolean spravneZadano = false;
@@ -63,7 +74,7 @@ public class UzivatelskeRozhraniEvidence {
     }
 
     /**
-     * Přidá nového pojištěnce. Metoda ošetřuje správnost vstupních záznamů
+     * Přidá nového pojištěnce. Metoda ošetřuje správnost vstupních záznamů buď přímo, nebo pomocí metod parsujCislo() a zvalidujZadanyText()
      */
     public void pridejPojistence() {
         boolean spravne = false;
@@ -105,29 +116,67 @@ public class UzivatelskeRozhraniEvidence {
             } else spravne = true;
         }
 
-        spravne = false;
         //Přidání pojištěnce do databáze
-        databaze.pridejPojistence(jmeno, prijmeni, vek, telCislo);
+        databazeVsechPojistencu.pridejPojistence(jmeno, prijmeni, vek, telCislo);
         System.out.println("   Nový pojištěnec " + jmeno + " " + prijmeni + " byl přidán");
     }
 
     /**
-     * Vyhledá a vrátí pojištěnce vybraného podle jména a příjmení nebo null
+     * Vyhledá seznam pojištěnců nalezených podle jména a příjmení a na základě volby uživatele vrátí pouze jednoho pojištěnce vybraného nebo null
+     * @return pojistenec jeden konkrétní pojištěnec nebo null
      */
     public Pojistenec vratVyhledanehoPojistence() {
+        Pojistenec pojistenec = null;
         System.out.println("   Zadejte jméno a poté zadejte příjmení konkrétního pojištěnce");
         System.out.println("   Jméno: ");
         String jmeno = sc.nextLine().toLowerCase().trim();
         System.out.println("   Příjmení: ");
         String prijmeni = sc.nextLine().toLowerCase().trim();
         System.out.println();
-        Pojistenec pojistenec = databaze.vyberPojistenceDleJmena(jmeno, prijmeni);
+        DatabazePojistencu nalezeniPojistenci = new DatabazePojistencu(databazeVsechPojistencu.vyberPojistenceDleJmena(jmeno, prijmeni));
+        if (nalezeniPojistenci.predejVsechnyPojistence().size() > 1) {
+            pojistenec = zvolZeShodnychPojistencu(nalezeniPojistenci);
+        } else if (nalezeniPojistenci.predejVsechnyPojistence().size() == 1) {
+            pojistenec = nalezeniPojistenci.predejVsechnyPojistence().getFirst();
+        }
+
         return pojistenec;
     }
 
     /**
+     * Vyzve k výběru z pojištěnců se stejným jménem a vrátí jednoho zvoleného podle ID
+     * @param databazeShodnychPojistencu Předána databáze všech vybraných pojištěnců shodných dle jména a příjmení
+     * @return zvolenyPojistenec Jeden zvolený pojištěnec
+     */
+    public Pojistenec zvolZeShodnychPojistencu(DatabazePojistencu databazeShodnychPojistencu) {
+        int[] mnozinaIdShodnychPojistencu = databazeShodnychPojistencu.vratIDPojistencuVDatabazi();
+        int vybraneId = -1;
+        boolean volbaJeVPoradku = false;
+        Pojistenec zvolenyPojistenec = null;
+        System.out.println("   Databáze obsahuje více pojištěnců se shodným jménem.");
+        vypisVsechnyPojistence(databazeShodnychPojistencu, "shodných");
+        System.out.println();
+
+        while (!volbaJeVPoradku) { //Výzva k zadání ID zvoleného pojištěnce a cyklus ke kontrole správné odpovědi dle mnoziny
+            System.out.println("   Zadejte ID zvoleného pojištěnce: ");
+            vybraneId = Integer.parseInt(sc.nextLine().trim());
+            for (int id : mnozinaIdShodnychPojistencu) {
+                if (vybraneId == id) {
+                    volbaJeVPoradku = true;
+                    zvolenyPojistenec = databazeShodnychPojistencu.vyberPojistenceDleID(vybraneId);
+                }
+            }
+            if (!volbaJeVPoradku) {
+                System.out.println();
+                System.out.println(sestavVystraznouHlasku("neplatné ID"));
+            }
+        }
+        return zvolenyPojistenec;
+    }
+
+    /**
      * Na základě parametru vymazatPojistence buď vypíše vyhledaného pojištěnce nebo volá metodu vymazPojistence()
-     * @param vymazatPojistence
+     * @param vymazatPojistence obsahuje informaci, zda je metoda součástí operace vymazPojistence(), nebo pouze vypisuje
      */
     public void vypisKonkretnihoPojistence(boolean vymazatPojistence) {
         Pojistenec vyhledanyPojistenec = vratVyhledanehoPojistence();
@@ -167,18 +216,20 @@ public class UzivatelskeRozhraniEvidence {
 
         if ((volba.equals("Y"))||(volba.equals("YES"))) {
             System.out.printf("   Pojištěnec %s %s byl vymazán %n", pojistenecKeSmazani.getJmeno(), pojistenecKeSmazani.getPrijmeni());
-            databaze.vymazPojistence(pojistenecKeSmazani);
+            databazeVsechPojistencu.vymazPojistence(pojistenecKeSmazani);
         } else {
             System.out.println("   Pojištěnec nebyl vymazán");
         }
     }
 
     /**
-     * Vypíše všechny pojištěnce
+     * Vypíše všechny pojištěnce z vybrané databáze
+     * @param vybranaDatabaze Předaná databáze
+     * @param popisDatabaze Text popisující předanou databázi
      */
-    public void vypisVsechnyPojistence() {
-        ArrayList<Pojistenec> seznamPojistencu = databaze.predejVsechnyPojistence();
-        System.out.println("   Výpis seznamu všech pojištěnců: ");
+    public void vypisVsechnyPojistence(DatabazePojistencu vybranaDatabaze, String popisDatabaze) {
+        ArrayList<Pojistenec> seznamPojistencu = vybranaDatabaze.predejVsechnyPojistence();
+        System.out.println("   Výpis " + popisDatabaze + " pojištěnců: ");
         for (Pojistenec pojistenec : seznamPojistencu) {
             System.out.println(pojistenec);
         }
@@ -188,7 +239,7 @@ public class UzivatelskeRozhraniEvidence {
     }
 
     /**
-     * Vypíše úvodní obrazovku
+     * Vypíše úvodní obrazovku a vyzve uživatele k volbě operace
      */
     public void vypisUvodniObrazovku() {
         System.out.println();
@@ -212,5 +263,51 @@ public class UzivatelskeRozhraniEvidence {
         System.out.println("   Pokračujte stisknutím klávesy enter");
         System.out.println("---------------------------------------------------------");
         sc.nextLine();
+    }
+
+    /**
+     * Přijme od uživatele vstupní data pro výběr požadované operace, na základě vstupu provede požadovanou operaci:
+     * 1. operace - vyžádá od uživatele atributy pro pojištěnce, kterého vytvoří a přidá do databáze všech pojištěnců
+     * 2. operace - vypíše všechny pojištěnce z databáze všech pojištěnců
+     * 3. operace - vypíše pojištěnce dle zadaného jména a příjmení. V případě více instancí se stejným jménem i příjmením
+     *              vznikne databáze pojištěnců se shodným jménem, kterou vypíše a vyzve uživatele ke konkrétnímu výběru
+     *              pomocí zadání ID
+     * 4. operace - vypíše pojištěnce dle zadaného jména a příjmení, případně upřesněného dle ID jako v operaci 3. Poté
+     *              vyzve uživatele k potvrzení vymazání záznamu a v kladném případě vymaže záznam
+     * 5. operace - ukončí hlavní cyklus programu
+     * 6. operace - vypíše chybovou hlášku
+     */
+    public void vyberOperaci() {
+        String volba = "";
+
+        while (!volba.equals("5")) { // Hlavní cyklus programu
+            vypisUvodniObrazovku();
+            volba = sc.nextLine();
+            System.out.println();
+            switch (volba) {
+                case "1":
+                    pridejPojistence();
+                    break;
+                case "2":
+                    vypisVsechnyPojistence(getDatabazePojistencu(), "všech");
+                    break;
+                case "3":
+                    vypisKonkretnihoPojistence(false);
+                    break;
+                case "4":
+                    vypisKonkretnihoPojistence(true);
+                    break;
+                case "5":
+                    System.out.println("   Aplikace byla ukončena");
+                    System.out.println("---------------------------------------------------------");
+                    break;
+                default:
+                    System.out.println(sestavVystraznouHlasku("neplatná volba"));
+                    break;
+            }
+            if (!volba.equals("5")) {
+                vyzadejEnter();
+            }
+        }
     }
 }

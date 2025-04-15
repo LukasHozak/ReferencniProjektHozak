@@ -12,11 +12,19 @@ public class DatabazePojistencu {
     private ArrayList <Pojistenec> pojistenci;
 
     /**
-     * Vytvoří instanci databáze pojištěnců, která v sobě současně vytvoří instanci kolekce seznamu pojištěnců
+     * Vytvoří instanci databáze pojištěnců, která v sobě současně vytvoří instanci prázdné kolekce seznamu pojištěnců
      */
     public DatabazePojistencu() {
-        pojistenci = new ArrayList<>();
+        this.pojistenci = new ArrayList<>();
     }
+
+    /**
+     * Vytvoří instanci databáze pojištěnců, která do seznamu pojištěnců přiřadí seznam pojištěnců z parametru
+     */
+    public DatabazePojistencu(ArrayList<Pojistenec> pojistenci) {
+        this.pojistenci = pojistenci;
+    }
+
 
     /**
      * Přidá nového pojištěnce
@@ -30,15 +38,45 @@ public class DatabazePojistencu {
     }
 
     /**
-     * Vyhledá pojištěnce podle zadaného jména a příjmení
+     * Vyhledá a vrátí seznam pojištěnců dle zadaného jména a příjmení
      * @param jmeno Vybrané jméno
      * @param prijmeni Vybrané příjmení
-     * @return nalezenyPojistenec
+     * @return nalezeniPojistenci seznam nalezených pojištěnců
      */
-    public Pojistenec vyberPojistenceDleJmena(String jmeno, String prijmeni) {
-        Pojistenec nalezenyPojistenec = null;
+    public ArrayList<Pojistenec> vyberPojistenceDleJmena(String jmeno, String prijmeni) {
+        ArrayList<Pojistenec> nalezeniPojistenci = new ArrayList<>();
         for (Pojistenec pojistenec : pojistenci) {
             if ((jmeno.equals(pojistenec.getJmeno().toLowerCase()))&&(prijmeni.equals(pojistenec.getPrijmeni().toLowerCase()))) {
+                nalezeniPojistenci.add(pojistenec);
+            }
+        }
+        return nalezeniPojistenci;
+    }
+
+    /**
+     * Vrátí množinu ID všech pojištěnců v databázi
+     * @return množina ID pojištěnců v databázi
+     */
+    public int[] vratIDPojistencuVDatabazi() {
+        int[] mnozinaIdShodnychPojistencu = new int[pojistenci.size()];
+        int i = 0;
+        for (Pojistenec pojistenec : pojistenci) {
+            mnozinaIdShodnychPojistencu[i] = pojistenec.getIdPojistence();
+            i++;
+        }
+        return mnozinaIdShodnychPojistencu;
+    }
+
+    /**
+     * Vyhledá a vrátí konkrétního pojištěnce dle ID
+     * @param id ID hledaného zaměstnance
+     * @return nalezený zaměstnanec
+     */
+    public Pojistenec vyberPojistenceDleID(int id) {
+        int idPojistence = id;
+        Pojistenec nalezenyPojistenec = null;
+        for (Pojistenec pojistenec : pojistenci) {
+            if (idPojistence == pojistenec.getIdPojistence()) {
                 nalezenyPojistenec = pojistenec;
             }
         }
@@ -47,15 +85,15 @@ public class DatabazePojistencu {
 
     /**
      * Vymaže konkrétního pojištěnce
+     * @param pojistenec Pojištěnec potvrzený k vymazání
      */
     public void vymazPojistence(Pojistenec pojistenec) {
-        Pojistenec smazanyPojistenec = vyberPojistenceDleJmena(pojistenec.getJmeno(), pojistenec.getPrijmeni());
-        pojistenci.remove(smazanyPojistenec);
+        pojistenci.remove(pojistenec);
     }
 
     /**
-     * Předá seznam evidovaných pojištěnců
-     * @return Seznam všech evidovaných pojištěnců
+     * Předá seznam pojištěnců v této databázi
+     * @return pojistenci Seznam všech pojištěnců této databáze
      */
     public ArrayList<Pojistenec> predejVsechnyPojistence() {
         return pojistenci;
