@@ -5,7 +5,6 @@ Repozitář ReferencniProjektHozak obsahuje program ke spravě pojištěnců, kt
 
 Jedná se o program napsaný v jazyce java, který představuje evidenci pojištěnců. Obsahuje třídy Main, UzivatelskeRozhraniEvidence, DatabazePojistencu a Pojistenec.
 
-Při psaní kódu jsem kladl důraz na dodržení best practises jako jsou správné pojmenování proměnných a metod, neduplikování kódu, Single Responsibility a dodržení řádné dokumentace.
-Principle.
+Při psaní kódu jsem kladl důraz na dodržení best practises jako jsou správné pojmenování proměnných a metod, neduplikování kódu, Single Responsibility Principle a dodržení řádné dokumentace.
 
 Lukáš Hozák
